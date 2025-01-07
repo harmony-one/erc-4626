@@ -19,11 +19,14 @@ async function main() {
 
     // ----------- Deploy RewardContract -----------
     console.log("Deploying RewardContract...");
-    const epochDuration = 14 * 24 * 60 * 60; // 14 days in seconds
+    const initialRewards = ethers.utils.parseUnits("100", 18); // 100 1sDAI for rewards
     const RewardContract = await ethers.getContractFactory("RewardContract");
-    const rewardContract = await RewardContract.deploy(token.address, vault.address, epochDuration);
+    const rewardContract = await RewardContract.deploy(token.address, vault.address, initialRewards);
     await rewardContract.deployed();
     console.log(`RewardContract deployed at: ${rewardContract.address}`);
+
+    const epochDuration = 60 * 60; // 1h in seconds
+    await rewardContract.setEpochDuration(epochDuration);
 
      // ----------- Example Usage -----------
 
