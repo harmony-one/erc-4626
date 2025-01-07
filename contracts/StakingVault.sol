@@ -10,10 +10,9 @@ contract StakingVault is ERC4626, Ownable {
     address public feeRecipient;         // Wallet to receive fees
 
     event RewardsDeposited(uint256 amount);
-    event ExchangeRateUpdated(uint256 rewardsAdded);
 
     constructor(IERC20 asset, address _feeRecipient) Ownable(msg.sender)
-        ERC20("Staking Vault Share", "SVS")
+        ERC20("boostDAI vault share token", "boostDAI")
         ERC4626(asset)
     {
         require(_feeRecipient != address(0), "Fee recipient cannot be zero address");
@@ -35,6 +34,20 @@ contract StakingVault is ERC4626, Ownable {
         shares = super.deposit(netAssets, receiver);
     }
 
+    /// @dev Override redeem to include a fee
+    function redeem(uint256 shares, address receiver, address owner) public override returns (uint256 assets) {
+        require(shares > 0, "Shares must be greater than zero");
+
+        // Calculate fee
+        uint256 fee = (shares * FEE_BPS) / 10_000;
+        uint256 netAssets = shares - fee;
+
+        // Redeem net assets from vault and burn shares
+        assets = super.redeem(netAssets, receiver, owner);
+
+        super.redeem(fee, feeRecipient, owner);
+    }
+
     /// @dev Override withdraw to include a fee
     function withdraw(uint256 assets, address receiver, address owner) public override returns (uint256 shares) {
         require(assets > 0, "Assets must be greater than zero");
@@ -43,18 +56,10 @@ contract StakingVault is ERC4626, Ownable {
         uint256 fee = (assets * FEE_BPS) / 10_000;
         uint256 netAssets = assets - fee;
 
-        // Transfer fee to feeRecipient
-        IERC20(asset()).transfer(feeRecipient, fee);
-
         // Withdraw net assets from vault and burn shares
         shares = super.withdraw(netAssets, receiver, owner);
-    }
 
-    /// @dev Function to update the exchange rate after reward distribution
-    function updateExchangeRate(uint256 rewardsAdded) external onlyOwner {
-        require(rewardsAdded > 0, "Rewards must be greater than zero");
-        IERC20(asset()).transferFrom(msg.sender, address(this), rewardsAdded);
-        emit ExchangeRateUpdated(rewardsAdded);
+        super.withdraw(fee, feeRecipient, owner);
     }
 
     /// @dev Update fee recipient address
