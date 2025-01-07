@@ -15,7 +15,7 @@ contract RewardContract is Ownable {
 
     event RewardsDistributed(uint256 amount);
 
-    constructor(IERC20 _rewardToken, address _vault, uint256 _initialRewards) {
+    constructor(IERC20 _rewardToken, address _vault, uint256 _initialRewards) Ownable(msg.sender) {
         rewardToken = _rewardToken;
         vault = _vault;
         rewardsPerEpoch = _initialRewards;
