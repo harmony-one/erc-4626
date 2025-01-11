@@ -48,16 +48,16 @@ contract RewardContract is Ownable {
         // require(block.timestamp >= lastEpochStart + epochDuration, "Epoch not ended");
 
         uint256 balance = rewardToken.balanceOf(address(this));
+        uint256 amountToDistribute = balance >= rewardsPerEpoch ? rewardsPerEpoch : balance;
 
-        require(balance >= rewardsPerEpoch, "balance not enough");
+        require(amountToDistribute > 0, "No rewards available for distribution");
 
         rewardToken.approve(address(vault), 0); // Reset allowance
-        rewardToken.approve(address(vault), rewardsPerEpoch);
-
-        vault.depositRewards(rewardsPerEpoch); // Calls the Vault
+        rewardToken.approve(address(vault), amountToDistribute);
+        vault.depositRewards(amountToDistribute);
 
         lastEpochStart = block.timestamp; // Start the next epoch
-        emit RewardsDistributed(rewardsPerEpoch);
+        emit RewardsDistributed(amountToDistribute);
     }
 
     function timeUntilNextEpoch() external view returns (uint256) {
