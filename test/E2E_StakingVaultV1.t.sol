@@ -205,4 +205,16 @@ contract DeployScriptTest is Test {
         // assertEq(token.balanceOf(FeeRecepient), 5.97 ether, 'Final FeeRecepient balance');
     }
 
+    function testRewardContractWithdrawAssets() public {
+        uint256 userBalanceBefore = token.balanceOf(deployer);
+        uint256 contractBalanceBefore = token.balanceOf(address(rewardContract));
+
+        rewardContract.withdrawAssets(address(deployer), contractBalanceBefore);
+
+        uint256 contractBalanceAfter = token.balanceOf(address(rewardContract));
+        uint256 userBalanceAfter = token.balanceOf(deployer);
+
+        assertEq(contractBalanceAfter, 0, 'Reward Contract balance not 0');
+        assertEq(userBalanceAfter - userBalanceBefore, contractBalanceBefore, 'User balance incorrect');
+    }
 }

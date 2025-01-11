@@ -2,6 +2,7 @@
 pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IStakingVaultDeposit} from "./IStakingVaultDeposit.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -28,6 +29,10 @@ contract RewardContract is Ownable {
 
     function setEpochDuration(uint256 newEpochDuration) external onlyOwner {
         epochDuration = newEpochDuration;
+    }
+
+    function withdrawAssets(address recipient, uint256 amount) external onlyOwner {
+        SafeERC20.safeTransfer(rewardToken, recipient, amount);
     }
 
     /// @dev Distributes rewards for the current epoch
