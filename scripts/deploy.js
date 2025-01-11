@@ -12,7 +12,7 @@ async function main() {
 
     // ----------- Deploy the StakingVault -----------
     const feeRecipient = deployer.address; // Specify the fee recipient address
-    const StakingVault = await ethers.getContractFactory("StakingVault");
+    const StakingVault = await ethers.getContractFactory("StakingVaultV2");
     const vault = await StakingVault.deploy(token.address, feeRecipient);
     await vault.deployed();
     console.log(`StakingVault deployed at address: ${vault.address}`);
