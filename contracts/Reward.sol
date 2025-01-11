@@ -7,6 +7,8 @@ import {IStakingVaultDeposit} from "./IStakingVaultDeposit.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract RewardContract is Ownable {
+    using SafeERC20 for IERC20;
+
     IERC20 public immutable rewardToken; // 1sDAI
     IStakingVaultDeposit public immutable vault; // Address of the Vault
 
@@ -15,6 +17,8 @@ contract RewardContract is Ownable {
     uint256 public rewardsPerEpoch;
 
     event RewardsDistributed(uint256 amount);
+    event EpochDurationUpdated(uint256 newDuration);
+    event RewardsPerEpochUpdated(uint256 newAmount);
 
     constructor(IERC20 _rewardToken, IStakingVaultDeposit _vault, uint256 _initialRewards) Ownable(msg.sender) {
         rewardToken = _rewardToken;
@@ -25,13 +29,17 @@ contract RewardContract is Ownable {
 
     function setNextEpochReward(uint256 amount) external onlyOwner {
         rewardsPerEpoch = amount;
+        emit RewardsPerEpochUpdated(amount);
     }
 
     function setEpochDuration(uint256 newEpochDuration) external onlyOwner {
         epochDuration = newEpochDuration;
+        emit EpochDurationUpdated(newEpochDuration);
     }
 
     function withdrawAssets(address recipient, uint256 amount) external onlyOwner {
+        uint256 balance = rewardToken.balanceOf(address(this));
+        require(amount <= balance, "Insufficient contract balance");
         SafeERC20.safeTransfer(rewardToken, recipient, amount);
     }
 
@@ -43,10 +51,19 @@ contract RewardContract is Ownable {
 
         require(balance >= rewardsPerEpoch, "balance not enough");
 
+        rewardToken.approve(address(vault), 0); // Reset allowance
         rewardToken.approve(address(vault), rewardsPerEpoch);
+
         vault.depositRewards(rewardsPerEpoch); // Calls the Vault
 
         lastEpochStart = block.timestamp; // Start the next epoch
         emit RewardsDistributed(rewardsPerEpoch);
+    }
+
+    function timeUntilNextEpoch() external view returns (uint256) {
+        if (block.timestamp >= lastEpochStart + epochDuration) {
+            return 0;
+        }
+        return (lastEpochStart + epochDuration) - block.timestamp;
     }
 }
