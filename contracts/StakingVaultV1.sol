@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import {IStakingVaultDeposit} from "./IStakingVaultDeposit.sol";
 
-contract StakingVault is ERC4626, Ownable {
-    uint256 public constant FEE_BPS = 10; // 0.1% fee in basis points
+contract StakingVaultV1 is ERC4626, Ownable, IStakingVaultDeposit {
+    uint256 public fee_bps = 10; // 0.1% fee in basis points
     address public feeRecipient;         // Wallet to receive fees
-
-    event RewardsDeposited(uint256 amount);
 
     constructor(IERC20 asset, address _feeRecipient) Ownable(msg.sender)
         ERC20("boostDAI vault share token", "boostDAI")
@@ -24,7 +23,7 @@ contract StakingVault is ERC4626, Ownable {
         require(assets > 0, "Assets must be greater than zero");
 
         // Calculate fee
-        uint256 fee = (assets * FEE_BPS) / 10_000;
+        uint256 fee = (assets * fee_bps) / 10_000;
         uint256 netAssets = assets - fee;
 
         // Transfer fee to feeRecipient
@@ -39,7 +38,7 @@ contract StakingVault is ERC4626, Ownable {
         require(shares > 0, "Shares must be greater than zero");
 
         // Calculate fee
-        uint256 fee = (shares * FEE_BPS) / 10_000;
+        uint256 fee = (shares * fee_bps) / 10_000;
         uint256 netAssets = shares - fee;
 
         // Redeem net assets from vault and burn shares
@@ -53,7 +52,7 @@ contract StakingVault is ERC4626, Ownable {
         require(assets > 0, "Assets must be greater than zero");
 
         // Calculate fee
-        uint256 fee = (assets * FEE_BPS) / 10_000;
+        uint256 fee = (assets * fee_bps) / 10_000;
         uint256 netAssets = assets - fee;
 
         // Withdraw net assets from vault and burn shares
@@ -66,6 +65,11 @@ contract StakingVault is ERC4626, Ownable {
     function setFeeRecipient(address newRecipient) external onlyOwner {
         require(newRecipient != address(0), "Fee recipient cannot be zero address");
         feeRecipient = newRecipient;
+    }
+
+    /// @dev Update fee
+    function setFeeBps(uint256 new_fee_bps) external onlyOwner {
+        fee_bps = new_fee_bps;
     }
 
     /// @dev Function for Reward Contract to deposit rewards
