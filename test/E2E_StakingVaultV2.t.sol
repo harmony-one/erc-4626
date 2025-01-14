@@ -100,9 +100,9 @@ contract DeployScriptTest is Test {
 */
     function testRedeem() public {
         uint256 depositAmount = 100 ether;
-        uint256 fee = 990099009900990100;
+        uint256 fee = 1 ether;
         uint256 depositMinusFee = depositAmount - fee;
-        uint256 depositWillReturned = 98029604940692089009;
+        uint256 depositWillReturned = 98.01 ether;
 
         vm.startPrank(User1);   
         token.approve(address(vault), depositAmount);
@@ -147,12 +147,12 @@ contract DeployScriptTest is Test {
         vm.stopPrank();
 
         assertEq(token.balanceOf(address(vault)), 0, 'Final Vault balance');
-        assertEq(token.balanceOf(FeeRecepient), 5911185177923732973, 'Final FeeRecepient balance');
+        assertEq(token.balanceOf(FeeRecepient), 5.97 ether, 'Final FeeRecepient balance');
     }
 
     function testWithdrawWithRewards() public {
         uint256 depositAmount = 100 ether;
-        uint256 fee = 990099009900990100; // ???
+        uint256 fee = 1 ether; // ???
         uint256 depositMinusFee = depositAmount - fee;
 
         vm.startPrank(User1);   
@@ -185,23 +185,23 @@ contract DeployScriptTest is Test {
         vm.startPrank(User1);   
         vault.redeem(vault.balanceOf(User1), User1, User1);
         // ???
-        assertEq(token.balanceOf(User1), 1088128614841682188015, 'Final User1 balance');
+        assertEq(token.balanceOf(User1), 1088009999999999999996, 'Final User1 balance');
         vm.stopPrank();
 
         vm.startPrank(User2);   
         vault.redeem(vault.balanceOf(User2), User2, User2);
         // ???
-        assertEq(token.balanceOf(User2), 1088128614841682188015, 'Final User2 balance');
+        assertEq(token.balanceOf(User2), 1088009999999999999996, 'Final User2 balance');
         vm.stopPrank();
 
         vm.startPrank(User3);   
         vault.redeem(vault.balanceOf(User3), User3, User3);
         // ???
-        assertEq(token.balanceOf(User3), 1088128614841682188016, 'Final User3 balance');
+        assertEq(token.balanceOf(User3), 1088009999999999999997, 'Final User3 balance');
         vm.stopPrank();
 
         // ???
         assertEq(token.balanceOf(address(vault)), 11, 'Final Vault balance');
-        // assertEq(token.balanceOf(FeeRecepient), 5.97 ether, 'Final FeeRecepient balance');
+        assertEq(token.balanceOf(FeeRecepient), 35.97 ether, 'Final FeeRecepient balance');
     }
 }
