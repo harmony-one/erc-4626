@@ -45,7 +45,7 @@ contract RewardContract is Ownable {
 
     /// @dev Distributes rewards for the current epoch
     function distributeRewards() external {
-        // require(block.timestamp >= lastEpochStart + epochDuration, "Epoch not ended");
+        require(block.timestamp >= lastEpochStart + epochDuration, "Epoch not ended");
 
         uint256 balance = rewardToken.balanceOf(address(this));
         uint256 amountToDistribute = balance >= rewardsPerEpoch ? rewardsPerEpoch : balance;
