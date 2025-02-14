@@ -37,7 +37,7 @@ contract DeployScriptTest is Test {
         vault.setFeeRecipient(FeeRecepient);
 
         // Deploy RewardContract
-        rewardContract = new RewardContract(token, vault, 3000 ether);
+        rewardContract = new RewardContract(token, vault, 3000 ether, deployer);
 
         // Mint tokens to deployer
         uint256 mintAmount = 1_000_000_000 ether; // 1 billion 1sDAI
